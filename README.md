@@ -2,8 +2,6 @@
 
 CornBot is a ~maize~ maze solving, Raspberry Pi bot and these are his brains!
 
-Each one of his software components is detailed below.
-
 ## Components
 
 * [x] **Maze Parser:** Creates mazes from ASCII art and outputs it as JSON, understood by the Maze
@@ -39,8 +37,8 @@ _______
 
 ```json
 {
-    "width": 4,
-    "height": 4,
+    "width": 3,
+    "height": 3,
     "blocks": [
         { "pos": [0,0], "east": true,  "north": false, "west": false, "south": true},
         { "pos": [0,1], "east": false, "north": false, "west": true,  "south": false},
