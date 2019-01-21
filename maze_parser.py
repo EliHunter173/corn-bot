@@ -4,11 +4,14 @@
 Converts a file containing a maze described in an ASCII drawing to a maze
 described in JSON, so that it is more easily read by other programs.
 
-    $ ./maze-parser.py FILE_NAME
+    $ ./maze_parser.py INPUT_FILE_NAME [OUTPUT_FILE_NAME]
 
 Where:
-    FILE_NAME is the path to a file containing the given ASCII maze. The maze
-        must be of the form described below
+    INPUT_FILE_NAME is the path to a file containing the given ASCII maze. The
+        maze must be of the form described below
+    OUTPUT_FILE_NAME is the path to the file that will contain the new JSON
+        file that describes the maze. Its format can be seen in the Maze
+        docstring.
 
 Maze Format:
     An ASCII maze is drawn with 3 characters. Pipes (|) represent vertical
@@ -77,15 +80,15 @@ class Maze:
           "width": 4,
           "height": 4,
           "blocks": [
-            { "pos": (0,0), "east": true,  "north": false, "west": false, "south": true,  }
-            { "pos": (0,1), "east": false, "north": false, "west": true,  "south": false, }
-            { "pos": (0,2), "east": false, "north": false, "west": false, "south": true,  }
-            { "pos": (1,0), "east": false, "north": true,  "west": false, "south": true,  }
-            { "pos": (1,1), "east": true,  "north": false, "west": false, "south": true,  }
-            { "pos": (1,2), "east": false, "north": true,  "west": true,  "south": false, }
-            { "pos": (2,0), "east": true,  "north": true,  "west": false, "south": false, }
-            { "pos": (2,1), "east": true,  "north": true,  "west": true,  "south": false, }
-            { "pos": (2,2), "east": false, "north": false, "west": true,  "south": false, }
+            { "pos": [0,0], "east": true,  "north": false, "west": false, "south": true},
+            { "pos": [0,1], "east": false, "north": false, "west": true,  "south": false},
+            { "pos": [0,2], "east": false, "north": false, "west": false, "south": true},
+            { "pos": [1,0], "east": false, "north": true,  "west": false, "south": true},
+            { "pos": [1,1], "east": true,  "north": false, "west": false, "south": true},
+            { "pos": [1,2], "east": false, "north": true,  "west": true,  "south": false},
+            { "pos": [2,0], "east": true,  "north": true,  "west": false, "south": false},
+            { "pos": [2,1], "east": true,  "north": true,  "west": true,  "south": false},
+            { "pos": [2,2], "east": false, "north": false, "west": true,  "south": false},
           ]
         }
     """
