@@ -40,15 +40,15 @@ _______
     "width": 3,
     "height": 3,
     "blocks": [
-        { "pos": [0,0], "east": true,  "north": false, "west": false, "south": true},
-        { "pos": [0,1], "east": false, "north": false, "west": true,  "south": false},
-        { "pos": [0,2], "east": false, "north": false, "west": false, "south": true},
-        { "pos": [1,0], "east": false, "north": true,  "west": false, "south": true},
-        { "pos": [1,1], "east": true,  "north": false, "west": false, "south": true},
-        { "pos": [1,2], "east": false, "north": true,  "west": true,  "south": false},
-        { "pos": [2,0], "east": true,  "north": true,  "west": false, "south": false},
-        { "pos": [2,1], "east": true,  "north": true,  "west": true,  "south": false},
-        { "pos": [2,2], "east": false, "north": false, "west": true,  "south": false}
+        { "row": 0, "col": 0, "north": false, "south": true,  "east": true,  "west": false},
+        { "row": 0, "col": 1, "north": false, "south": false, "east": false, "west": true},
+        { "row": 0, "col": 2, "north": false, "south": true,  "east": false, "west": false},
+        { "row": 1, "col": 0, "north": true,  "south": true,  "east": false, "west": false},
+        { "row": 1, "col": 1, "north": false, "south": true,  "east": true,  "west": false},
+        { "row": 1, "col": 2, "north": true,  "south": false, "east": false, "west": true},
+        { "row": 2, "col": 0, "north": true,  "south": false, "east": true,  "west": false},
+        { "row": 2, "col": 1, "north": true,  "south": false, "east": true,  "west": true},
+        { "row": 2, "col": 2, "north": false, "south": false, "east": false, "west": true}
     ]
 }
 ```
