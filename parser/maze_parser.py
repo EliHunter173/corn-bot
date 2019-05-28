@@ -26,6 +26,15 @@ Maze Format:
     The first line is normally underscores for appearance, but can be anything
     as it is discarded.
 
+Maze Coordinates:
+    Each block has (row, col) coordinates starting from 0 at the top left. row
+    increases as you go right and col increases as you go down.
+
+    Each vertical wall gets coordinates cooresponding to that of the block to
+    the left of it.
+    Each horizontal wall gets coordinates corresponding to that of the block
+    above it.
+
 See:
     Maze
 """
@@ -37,33 +46,33 @@ import json
 DIRNAME = os.path.dirname(__file__)
 
 
-class MazeBlock:
+def _file_row(row):
     """
-    A single block in a maze with a given position and passability for each
-    direction.
+    Converts a given row in a maze to the corresponding actual line number
+    in the maze.
+
+    Args:
+        row (int): The row of the block the maze object.
+
+    Returns:
+        int: The line number in the file corresponding to the given row.
     """
+    return row + 1
 
-    def __init__(self, row, col):
-        """Defines a MazeBlock with the given x-position and y-position.
-        By default, all passable values are None."""
-        self._row = row
-        self._col = col
 
-        # These are expected to be set later
-        self.east = None
-        self.north = None
-        self.west = None
-        self.south = None
+def _file_col(col):
+    """
+    Converts a given column in a maze to the corresponding actual line
+    number in the maze.
 
-    def as_dict(self):
-        return {
-            'row': self._col,
-            'col': self._row,
-            'east': self.east,
-            'north': self.north,
-            'west': self.west,
-            'south': self.south,
-        }
+    Args:
+        col (int): The column of the block the maze object.
+
+    Returns:
+        int: The column number in the file corresponding to the given
+            column in the maze.
+    """
+    return 2 * col + 1
 
 
 class Maze:
@@ -76,56 +85,28 @@ class Maze:
         | |  _|
         |_____|
 
-    This maze can then be dumped into a JSON File in the form, where east,
-    north, west, and south define whether that direction is passable:
-        {
-          "width": 3,
-          "height": 3,
-          "blocks": [
-            { "row": 0, "col": 0, "north": false, "south": true,  "east": true,  "west": false},
-            { "row": 0, "col": 1, "north": false, "south": false, "east": false, "west": true},
-            { "row": 0, "col": 2, "north": false, "south": true,  "east": false, "west": false},
-            { "row": 1, "col": 0, "north": true,  "south": true,  "east": false, "west": false},
-            { "row": 1, "col": 1, "north": false, "south": true,  "east": true,  "west": false},
-            { "row": 1, "col": 2, "north": true,  "south": false, "east": false, "west": true},
-            { "row": 2, "col": 0, "north": true,  "south": false, "east": true,  "west": false},
-            { "row": 2, "col": 1, "north": true,  "south": false, "east": true,  "west": true},
-            { "row": 2, "col": 2, "north": false, "south": false, "east": false, "west": true}
-          ]
-        }
+    This maze can then be dumped into a JSON File in the form, where every
+    possible wall at every possible position is described.
+
+    "width": 3,
+    "height": 3,
+    "vertical_walls": [
+        { "row": 0, "col": 0, "passable": true },
+        { "row": 0, "col": 1, "passable": false },
+        { "row": 1, "col": 0, "passable": false },
+        { "row": 1, "col": 1, "passable": true },
+        { "row": 2, "col": 0, "passable": true },
+        { "row": 2, "col": 1, "passable": true }
+    ],
+    "horizontal_walls": [
+        { "row": 0, "col": 0, "passable": true },
+        { "row": 0, "col": 1, "passable": false },
+        { "row": 0, "col": 2, "passable": true },
+        { "row": 1, "col": 0, "passable": true },
+        { "row": 1, "col": 1, "passable": true },
+        { "row": 1, "col": 2, "passable": false }
+    ]
     """
-
-    @staticmethod
-    def file_row(row):
-        """
-        Converts a given row in a maze to the corresponding actual line number
-        in the maze.
-
-        Args:
-            row (int): The row of the block the maze object.
-
-        Returns:
-            int: The line number in the file corresponding to the given row.
-        """
-        # The first line is ignored.
-        return row + 1
-
-    @staticmethod
-    def file_col(col):
-        """
-        Converts a given column in a maze to the corresponding actual line
-        number in the maze.
-
-        Args:
-            col (int): The column of the block the maze object.
-
-        Returns:
-            int: The column number in the file corresponding to the given
-                column in the maze.
-        """
-        # The important columns are |x|x|x| the x's. That is, every other
-        # column starting with the second.
-        return 2 * col + 1
 
     """Set of all characters that are considered horizontal walls in an ASCII
     maze."""
@@ -163,23 +144,42 @@ class Maze:
         extension_index = file_name.rindex('.')
         self.title = file_name[0:extension_index]
 
-        # Blockifies the given file
+        # Convert the file into a list of strings
         with open(os.path.join(DIRNAME, file_name)) as f:
             self._maze_strings = f.readlines()
 
         # Convert file's number of lines and number of columns to be the
         # dimensions of the maze
-        file_height = len(self._maze_strings)
-        self._height = file_height - 1
+        self._height = len(self._maze_strings) - 1
         # All valid mazes have their second column be the first "row" of the
         # maze
-        file_width = len(self._maze_strings[1])
-        self._width = (file_width - 1) // 2
+        self._width = (len(self._maze_strings[1]) - 1) // 2
 
-        self._maze_blocks = []
-        for row in range(self._height):
-            for col in range(self._width):
-                self._maze_blocks.append(self.parse_block(row, col))
+        # The following uses extremely weird, Pythonic syntax. However, without
+        # easy access to arrays or 2D lists, this is the best way I can think
+        # of.
+
+        # Parse the vertical walls. Vertical walls are 1 short on width.
+        self._vertical_walls = [
+            {
+                "row": row,
+                "col": col,
+                "passable": self._parse_vertical(row, col)
+            }
+            for row in range(self._height)
+            for col in range(self._width - 1)
+        ]
+
+        # Parse the horizontal walls. Horizontal walls are 1 short on height.
+        self._horizontal_walls = [
+            {
+                "row": row,
+                "col": col,
+                "passable": self._parse_horizontal(row, col)
+            }
+            for row in range(self._height - 1)
+            for col in range(self._width)
+        ]
 
     @property
     def title(self):
@@ -191,40 +191,17 @@ class Maze:
             raise TypeError('A title must be a string')
         self._title = title
 
-    def parse_block(self, row, col):
+    def _parse_vertical(self, row, col):
         """
-        Returns a block object that is defined in the ASCII maze at the given
-        row and column in the ASCII maze
+        Checks whether the wall at the given row and column of the maze is
+        vertically passable. Throws an error if an unknown character is
+        found.
 
         Args:
-            row (int): The row number of the block in the Maze.
-            col (int): The column number of the block in the Maze.
-        """
-        file_row = self.file_row(row)
-        file_col = self.file_col(col)
-
-        block = MazeBlock(row, col)
-        # East is a vertical wall one col right of the anchor file row
-        block.east = self._vertical_is_passable(file_row, file_col + 1)
-        # North is a horizontal wall one row above the anchor file row
-        block.north = self._horizontal_is_passable(file_row - 1, file_col)
-        # West is a vertical wall one col left of the anchor file row
-        block.west = self._vertical_is_passable(file_row, file_col - 1)
-        # South is a horizontal wall at the anchor file row
-        block.south = self._horizontal_is_passable(file_row, file_col)
-
-        return block
-
-    def _vertical_is_passable(self, file_row, file_col):
-        """
-        Checks whether the character at the given file row and file column is
-        vertically passable. Throws an error if an unknown character is found.
-
-        Args:
-            file_row (int): The line number in the file that contains the
-                character to be determined.
-            file_col (int): The column number in the file that contains the
-                character to be determined.
+            row (int): The row in the maze that contains the character to be
+                determined.
+            col (int): The column in the maze that contains the character to be
+                determined.
 
         Returns:
             True: When the character at the given row and column is considered
@@ -236,27 +213,29 @@ class Maze:
             ValueError: When the character at the given row and column is not
                 categorized.
         """
-        test_char = self._maze_strings[file_row][file_col]
+        file_row = _file_row(row)
+        # The file_col for vertical walls is one to the right of the block
+        file_col = _file_col(col) + 1
 
+        test_char = self._maze_strings[file_row][file_col]
         if test_char in Maze.VERTICAL_WALLS:
             return False
         if test_char in Maze.VERTICAL_SPACES:
             return True
-
         raise ValueError('Unknown character in %s at (%d, %d) \'%s\''
                          % (self._title, file_row, file_col, test_char))
 
-    def _horizontal_is_passable(self, file_row, file_col):
+    def _parse_horizontal(self, row, col):
         """
-        Checks whether the character at the given file row and file column is
+        Checks whether the wall at the given row and column of the maze is
         horizontally passable. Throws an error if an unknown character is
         found.
 
         Args:
-            file_row (int): The line number in the file that contains the
-                character to be determined.
-            file_col (int): The column number in the file that contains the
-                character to be determined.
+            row (int): The row in the maze that contains the character to be
+                determined.
+            col (int): The column in the maze that contains the character to be
+                determined.
 
         Returns:
             True: When the character at the given row and column is considered
@@ -268,13 +247,14 @@ class Maze:
             ValueError: When the character at the given row and column is not
                 categorized.
         """
-        test_char = self._maze_strings[file_row][file_col]
+        file_row = _file_row(row)
+        file_col = _file_col(col)
 
+        test_char = self._maze_strings[file_row][file_col]
         if test_char in Maze.HORIZONTAL_WALLS:
             return False
         if test_char in Maze.HORIZONTAL_SPACES:
             return True
-
         raise ValueError('Unknown character in %s at (%d, %d) \'%s\''
                          % (self._title, file_row, file_col, test_char))
 
@@ -282,7 +262,8 @@ class Maze:
         return {
             'width': self._width,
             'height': self._height,
-            'blocks': [block.as_dict() for block in self._maze_blocks],
+            'vertical_walls': self._vertical_walls,
+            'horizontal_walls': self._horizontal_walls,
         }
 
 
@@ -295,4 +276,4 @@ if __name__ == '__main__':
     maze = Maze(file_name)
     json_file_name = maze.title + '.json'
     with open(os.path.join(DIRNAME, json_file_name), 'w') as f:
-        json.dump(maze.as_dict(), f)
+        json.dump(maze.as_dict(), f, indent=4)

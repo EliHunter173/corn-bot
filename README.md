@@ -36,21 +36,24 @@ _______
 ```
 
 ```json
-{
-    "width": 3,
-    "height": 3,
-    "blocks": [
-        { "row": 0, "col": 0, "north": false, "south": true,  "east": true,  "west": false},
-        { "row": 0, "col": 1, "north": false, "south": false, "east": false, "west": true},
-        { "row": 0, "col": 2, "north": false, "south": true,  "east": false, "west": false},
-        { "row": 1, "col": 0, "north": true,  "south": true,  "east": false, "west": false},
-        { "row": 1, "col": 1, "north": false, "south": true,  "east": true,  "west": false},
-        { "row": 1, "col": 2, "north": true,  "south": false, "east": false, "west": true},
-        { "row": 2, "col": 0, "north": true,  "south": false, "east": true,  "west": false},
-        { "row": 2, "col": 1, "north": true,  "south": false, "east": true,  "west": true},
-        { "row": 2, "col": 2, "north": false, "south": false, "east": false, "west": true}
-    ]
-}
+"width": 3,
+"height": 3,
+"vertical_walls": [
+    { "row": 0, "col": 0, "passable": true },
+    { "row": 0, "col": 1, "passable": false },
+    { "row": 1, "col": 0, "passable": false },
+    { "row": 1, "col": 1, "passable": true },
+    { "row": 2, "col": 0, "passable": true },
+    { "row": 2, "col": 1, "passable": true }
+],
+"horizontal_walls": [
+    { "row": 0, "col": 0, "passable": true },
+    { "row": 0, "col": 1, "passable": false },
+    { "row": 0, "col": 2, "passable": true },
+    { "row": 1, "col": 0, "passable": true },
+    { "row": 1, "col": 1, "passable": true },
+    { "row": 1, "col": 2, "passable": false }
+]
 ```
 
 ## Authors
